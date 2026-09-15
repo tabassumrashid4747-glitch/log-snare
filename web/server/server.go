@@ -129,21 +129,21 @@ func Run(configFile string, debug bool, resetDb bool, listenHost string) error {
 func authMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
-		user := session.Get("user")
-		if user == nil {
+		val := session.Get("user")
+		if val == nil {
 			c.Redirect(http.StatusFound, "/login")
 			c.Abort()
 			return
 		}
 
-		if !user.(data.UserSafe).Active {
+		user, ok := val.(data.UserSafe)
+		if !ok || !user.Active {
 			c.Redirect(http.StatusFound, "/login")
 			c.Abort()
 			return
 		}
 
 		c.Next()
-
 	}
 }
 
