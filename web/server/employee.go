@@ -28,7 +28,17 @@ func NewEmployeeHandler(us *service.EmployeeService, ss *service.SettingsService
 func (h *EmployeeHandler) Employees(c *gin.Context) {
 
 	session := sessions.Default(c)
-	user := session.Get("user").(data.UserSafe)
+	val := session.Get("user")
+	if val == nil {
+		c.Redirect(302, "/login")
+		return
+	}
+
+	user, ok := val.(data.UserSafe)
+	if !ok {
+		c.Redirect(302, "/login")
+		return
+	}
 
 	id := c.Param("id")
 	intId, err := strconv.Atoi(id)
@@ -78,6 +88,11 @@ func (h *EmployeeHandler) Employees(c *gin.Context) {
 		h.SettingsService.ChallengeComplete("1")
 	}
 
+	userInitial := ""
+	if len(user.Username) > 0 {
+		userInitial = string(strings.ToUpper(user.Username)[0])
+	}
+
 	c.HTML(200, "employees.html", gin.H{
 		"CurrentRoute":        "/employees",
 		"Employees":           employees,
@@ -88,9 +103,8 @@ func (h *EmployeeHandler) Employees(c *gin.Context) {
 
 		// common data can be moved to middleware
 		"CompanyName":       user.CompanyName,
-		"UserInitial":       string(strings.ToUpper(user.Username)[0]),
+		"UserInitial":       userInitial,
 		"UserRole":          user.Role,
 		"ValidationEnabled": data.ValidationEnabled(),
 	})
-
 }
