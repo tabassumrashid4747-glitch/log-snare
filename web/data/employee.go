@@ -11,7 +11,7 @@ import (
 
 // Employee represents an HR employee with various personal and professional details.
 type Employee struct {
-	gorm.Model            // Embedding gorm.Model adds fields ID, CreatedAt, UpdatedAt, DeletedAt
+	gorm.Model                  // Embedding gorm.Model adds fields ID, CreatedAt, UpdatedAt, DeletedAt
 	CompanyId     int     `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	CompanyKSUID  int     `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	EmployeeKSUID string  `gorm:"index;unique"` // KSUID identifier for demo
