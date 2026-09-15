@@ -21,7 +21,17 @@ func NewDashboardHandler(us *service.DashboardService) *DashboardHandler {
 func (h *DashboardHandler) Dashboard(c *gin.Context) {
 
 	session := sessions.Default(c)
-	user := session.Get("user").(data.UserSafe)
+	val := session.Get("user")
+	if val == nil {
+		c.Redirect(302, "/login")
+		return
+	}
+
+	user, ok := val.(data.UserSafe)
+	if !ok {
+		c.Redirect(302, "/login")
+		return
+	}
 
 	summaryCounts, err := h.DashboardService.GetSummaryCounts(user.CompanyId)
 	if err != nil {
@@ -35,6 +45,11 @@ func (h *DashboardHandler) Dashboard(c *gin.Context) {
 		h.DashboardService.Logger.Error("unable get challenge counts", zap.Error(err))
 		c.Redirect(500, "/")
 		return
+	}
+
+	userInitial := ""
+	if len(user.Username) > 0 {
+		userInitial = string(strings.ToUpper(user.Username)[0])
 	}
 
 	c.HTML(200, "dashboard.html", gin.H{
@@ -51,7 +66,7 @@ func (h *DashboardHandler) Dashboard(c *gin.Context) {
 
 		// common data can be moved to middleware
 		"CompanyName":       user.CompanyName,
-		"UserInitial":       string(strings.ToUpper(user.Username)[0]),
+		"UserInitial":       userInitial,
 		"UserRole":          user.Role,
 		"ValidationEnabled": data.ValidationEnabled(),
 	})
