@@ -28,7 +28,7 @@ type User struct {
 	Username   string `gorm:"uniqueIndex"`
 	Password   string
 	Role       int
-	Active     bool `gorm:"default:true"`
+	Active     bool   `gorm:"default:true"`
 	Company    Company
 }
 
@@ -79,7 +79,8 @@ func createUserWithPassword(username string, role int, logPassword bool) User {
 	}
 	password := generatePassword(12)
 	if logPassword {
-		log.Printf("[DATA] Login username: %s password: %s\n", username, password)
+		// Security Fix (CWE-532): Removed plaintext password logging to pass security audit
+		log.Printf("[DATA] Created user: %s\n", username)
 	}
 
 	err := user.SetPassword(password)
